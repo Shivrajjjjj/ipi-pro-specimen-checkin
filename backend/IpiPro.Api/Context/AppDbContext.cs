@@ -28,28 +28,36 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Query filters will be applied per-request when tenant context exists
-        // During seeding, these are not applied (safe because we're creating the initial data)
+        // Configure relationships
+        modelBuilder.Entity<Manifest>()
+            .HasMany(m => m.Specimens)
+            .WithOne()
+            .HasForeignKey(s => s.ManifestId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Query filters for tenant isolation (soft enforcement)
         try
         {
             var currentLabId = _tenantProvider.GetCurrentLabId();
             if (currentLabId != Guid.Empty)
             {
-                modelBuilder.Entity<Manifest>().HasQueryFilter(m => m.LabId == currentLabId);
-                modelBuilder.Entity<Specimen>().HasQueryFilter(s => s.LabId == currentLabId);
-                modelBuilder.Entity<Discrepancy>().HasQueryFilter(d => d.LabId == currentLabId);
+                modelBuilder.Entity<Manifest>()
+                    .HasQueryFilter(m => m.LabId == currentLabId);
+                modelBuilder.Entity<Specimen>()
+                    .HasQueryFilter(s => s.LabId == currentLabId);
+                modelBuilder.Entity<Discrepancy>()
+                    .HasQueryFilter(d => d.LabId == currentLabId);
             }
         }
         catch
         {
-            // No tenant context during model creation (e.g., migrations, seeding)
-            // Query filters will be empty and all data will be visible
+            // No tenant context during migrations or model creation
         }
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        // Inject LabId on new entities if we have a tenant context
+        // Auto-inject LabId for new entities
         try
         {
             var currentLabId = _tenantProvider.GetCurrentLabId();
@@ -60,9 +68,13 @@ public class AppDbContext : DbContext
                     if (entry.State == EntityState.Added)
                     {
                         var labIdProp = entry.Entity.GetType().GetProperty("LabId");
-                        if (labIdProp != null && (Guid)labIdProp.GetValue(entry.Entity)! == Guid.Empty)
+                        if (labIdProp != null)
                         {
-                            labIdProp.SetValue(entry.Entity, currentLabId);
+                            var currentValue = (Guid)labIdProp.GetValue(entry.Entity)!;
+                            if (currentValue == Guid.Empty)
+                            {
+                                labIdProp.SetValue(entry.Entity, currentLabId);
+                            }
                         }
                     }
                 }
@@ -70,7 +82,7 @@ public class AppDbContext : DbContext
         }
         catch
         {
-            // If we can't get tenant context, skip automatic LabId injection
+            // If we can't get tenant context, skip injection
         }
 
         return base.SaveChangesAsync(cancellationToken);

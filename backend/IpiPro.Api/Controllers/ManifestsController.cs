@@ -16,16 +16,18 @@ public class ManifestsController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly ITenantProvider _tenantProvider;
+    private readonly ILogger<ManifestsController> _logger;
 
-    public ManifestsController(AppDbContext db, ITenantProvider tenantProvider)
+    public ManifestsController(AppDbContext db, ITenantProvider tenantProvider, ILogger<ManifestsController> logger)
     {
         _db = db;
         _tenantProvider = tenantProvider;
+        _logger = logger;
     }
 
     /// <summary>
     /// Get all manifests for the current tenant (lab).
-    /// Tenant isolation is enforced via AppDbContext query filters.
+    /// Tenant isolation enforced via AppDbContext query filters.
     /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetManifests()
@@ -33,16 +35,20 @@ public class ManifestsController : ControllerBase
         try
         {
             var currentLabId = _tenantProvider.GetCurrentLabId();
+            _logger.LogInformation($"Fetching manifests for Lab: {currentLabId}");
+            
             var manifests = await _db.Manifests
-                .Include(m => m.Specimens)
                 .Where(m => m.LabId == currentLabId)
+                .Include(m => m.Specimens)
                 .OrderByDescending(m => m.SentAt)
                 .ToListAsync();
 
+            _logger.LogInformation($"Found {manifests.Count} manifests");
             return Ok(manifests);
         }
         catch (Exception ex)
         {
+            _logger.LogError($"Error fetching manifests: {ex.Message}");
             return StatusCode(500, new { error = "Failed to fetch manifests.", details = ex.Message });
         }
     }
@@ -57,12 +63,16 @@ public class ManifestsController : ControllerBase
         try
         {
             var currentLabId = _tenantProvider.GetCurrentLabId();
+            _logger.LogInformation($"Fetching manifest {id} for Lab: {currentLabId}");
+            
             var manifest = await _db.Manifests
+                .Where(m => m.LabId == currentLabId)
                 .Include(m => m.Specimens)
-                .FirstOrDefaultAsync(m => m.Id == id && m.LabId == currentLabId);
+                .FirstOrDefaultAsync(m => m.Id == id);
 
             if (manifest == null)
             {
+                _logger.LogWarning($"Manifest {id} not found or unauthorized");
                 return NotFound(new { error = "Manifest not found or unauthorized access." });
             }
 
@@ -70,6 +80,7 @@ public class ManifestsController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError($"Error fetching manifest {id}: {ex.Message}");
             return StatusCode(500, new { error = "Failed to fetch manifest.", details = ex.Message });
         }
     }
@@ -85,20 +96,27 @@ public class ManifestsController : ControllerBase
         try
         {
             var currentLabId = _tenantProvider.GetCurrentLabId();
+            _logger.LogInformation($"Marking specimen {sid} as received for manifest {id}");
 
             // Verify manifest belongs to current tenant
-            var manifest = await _db.Manifests.FirstOrDefaultAsync(m => m.Id == id && m.LabId == currentLabId);
+            var manifest = await _db.Manifests
+                .Where(m => m.LabId == currentLabId)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            
             if (manifest == null)
             {
+                _logger.LogWarning($"Manifest {id} not found for Lab {currentLabId}");
                 return NotFound(new { error = "Manifest not found or unauthorized access." });
             }
 
             // Fetch specimen with explicit tenant check
-            var specimen = await _db.Specimens.FirstOrDefaultAsync(
-                s => s.Id == sid && s.ManifestId == id && s.LabId == currentLabId);
+            var specimen = await _db.Specimens
+                .Where(s => s.LabId == currentLabId)
+                .FirstOrDefaultAsync(s => s.Id == sid && s.ManifestId == id);
 
             if (specimen == null)
             {
+                _logger.LogWarning($"Specimen {sid} not found for Lab {currentLabId}");
                 return NotFound(new { error = "Specimen not found or unauthorized access." });
             }
 
@@ -106,15 +124,21 @@ public class ManifestsController : ControllerBase
             if (specimen.Status != SpecimenStatus.Received)
             {
                 specimen.Status = SpecimenStatus.Received;
-                specimen.ReceivedBy = "Lab Tech 1"; // TODO: Pull from claims/session
+                specimen.ReceivedBy = "Lab Tech 1";
                 specimen.ReceivedAt = DateTime.UtcNow;
                 await _db.SaveChangesAsync();
+                _logger.LogInformation($"Specimen {sid} marked as received");
+            }
+            else
+            {
+                _logger.LogInformation($"Specimen {sid} already received (idempotent call)");
             }
 
             return Ok(new { success = true, specimen = specimen });
         }
         catch (Exception ex)
         {
+            _logger.LogError($"Error marking specimen received: {ex.Message}");
             return StatusCode(500, new { error = "Failed to mark specimen received.", details = ex.Message });
         }
     }
@@ -129,20 +153,27 @@ public class ManifestsController : ControllerBase
         try
         {
             var currentLabId = _tenantProvider.GetCurrentLabId();
+            _logger.LogInformation($"Flagging specimen {sid} as missing for manifest {id}");
 
             // Verify manifest belongs to current tenant
-            var manifest = await _db.Manifests.FirstOrDefaultAsync(m => m.Id == id && m.LabId == currentLabId);
+            var manifest = await _db.Manifests
+                .Where(m => m.LabId == currentLabId)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            
             if (manifest == null)
             {
+                _logger.LogWarning($"Manifest {id} not found for Lab {currentLabId}");
                 return NotFound(new { error = "Manifest not found or unauthorized access." });
             }
 
             // Fetch specimen with explicit tenant check
-            var specimen = await _db.Specimens.FirstOrDefaultAsync(
-                s => s.Id == sid && s.ManifestId == id && s.LabId == currentLabId);
+            var specimen = await _db.Specimens
+                .Where(s => s.LabId == currentLabId)
+                .FirstOrDefaultAsync(s => s.Id == sid && s.ManifestId == id);
 
             if (specimen == null)
             {
+                _logger.LogWarning($"Specimen {sid} not found for Lab {currentLabId}");
                 return NotFound(new { error = "Specimen not found or unauthorized access." });
             }
 
@@ -156,16 +187,19 @@ public class ManifestsController : ControllerBase
                 SpecimenId = sid,
                 Type = DiscrepancyType.Missing,
                 Status = DiscrepancyStatus.Open,
-                FlaggedAt = DateTime.UtcNow
+                FlaggedAt = DateTime.UtcNow,
+                LabId = currentLabId
             };
 
             _db.Discrepancies.Add(discrepancy);
             await _db.SaveChangesAsync();
+            _logger.LogInformation($"Specimen {sid} flagged as missing, discrepancy created");
 
             return Ok(new { success = true, specimen = specimen, discrepancy = discrepancy });
         }
         catch (Exception ex)
         {
+            _logger.LogError($"Error flagging specimen: {ex.Message}");
             return StatusCode(500, new { error = "Failed to flag specimen missing.", details = ex.Message });
         }
     }
@@ -181,20 +215,24 @@ public class ManifestsController : ControllerBase
         try
         {
             var currentLabId = _tenantProvider.GetCurrentLabId();
+            _logger.LogInformation($"Closing manifest {id} for Lab {currentLabId}");
 
             // Fetch manifest with specimens, scoped to current tenant
             var manifest = await _db.Manifests
+                .Where(m => m.LabId == currentLabId)
                 .Include(m => m.Specimens)
-                .FirstOrDefaultAsync(m => m.Id == id && m.LabId == currentLabId);
+                .FirstOrDefaultAsync(m => m.Id == id);
 
             if (manifest == null)
             {
+                _logger.LogWarning($"Manifest {id} not found for Lab {currentLabId}");
                 return NotFound(new { error = "Manifest not found or unauthorized access." });
             }
 
             // Check if already closed
             if (manifest.Status != ManifestStatus.Open)
             {
+                _logger.LogWarning($"Manifest {id} already closed");
                 return BadRequest(new { error = "Manifest is already closed." });
             }
 
@@ -202,6 +240,7 @@ public class ManifestsController : ControllerBase
             var pendingCount = manifest.Specimens.Count(s => s.Status == SpecimenStatus.Pending);
             if (pendingCount > 0)
             {
+                _logger.LogWarning($"Cannot close manifest {id}: {pendingCount} pending specimens");
                 return BadRequest(new
                 {
                     error = "Cannot close manifest with pending specimens remaining.",
@@ -214,11 +253,13 @@ public class ManifestsController : ControllerBase
             manifest.Status = hasFlagged ? ManifestStatus.ClosedWithDiscrepancy : ManifestStatus.Closed;
 
             await _db.SaveChangesAsync();
+            _logger.LogInformation($"Manifest {id} closed successfully with status: {manifest.Status}");
 
             return Ok(new { success = true, manifest = manifest });
         }
         catch (Exception ex)
         {
+            _logger.LogError($"Error closing manifest: {ex.Message}");
             return StatusCode(500, new { error = "Failed to close manifest.", details = ex.Message });
         }
     }

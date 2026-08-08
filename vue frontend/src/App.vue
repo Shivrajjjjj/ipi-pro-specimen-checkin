@@ -43,216 +43,232 @@
             </button>
         </nav>
 
-        <!-- Error Toast Notification -->
-        <div v-if="errorMessage" class="fixed top-4 right-4 bg-red-500 text-white px-4 py-3 rounded shadow-lg max-w-sm z-50">
-            <div class="flex justify-between items-start">
-                <span>{{ errorMessage }}</span>
-                <button @click="errorMessage = ''" class="ml-2 text-lg">&times;</button>
+        <!-- Error Toast -->
+        <transition name="fade">
+            <div v-if="errorMessage" class="fixed top-4 right-4 bg-red-500 text-white px-4 py-3 rounded shadow-lg max-w-sm z-50">
+                <div class="flex justify-between items-start">
+                    <span>{{ errorMessage }}</span>
+                    <button @click="errorMessage = ''" class="ml-2 text-lg">&times;</button>
+                </div>
             </div>
-        </div>
+        </transition>
 
-        <!-- Success Toast Notification -->
-        <div v-if="successMessage" class="fixed top-4 right-4 bg-emerald-500 text-white px-4 py-3 rounded shadow-lg max-w-sm z-50">
-            <div class="flex justify-between items-start">
-                <span>{{ successMessage }}</span>
-                <button @click="successMessage = ''" class="ml-2 text-lg">&times;</button>
+        <!-- Success Toast -->
+        <transition name="fade">
+            <div v-if="successMessage" class="fixed top-4 right-4 bg-emerald-500 text-white px-4 py-3 rounded shadow-lg max-w-sm z-50">
+                <div class="flex justify-between items-start">
+                    <span>{{ successMessage }}</span>
+                    <button @click="successMessage = ''" class="ml-2 text-lg">&times;</button>
+                </div>
             </div>
-        </div>
+        </transition>
 
-        <!-- Content Area -->
+        <!-- Content -->
         <div class="p-5">
-            <!-- CHECK-IN TAB (Main Tab) -->
+            <!-- CHECK-IN TAB -->
             <div v-if="activeTab === 'check-in'" class="grid grid-cols-12 gap-5 max-w-[1600px] mx-auto">
-                <!-- Left Sidebar Worklist -->
+                <!-- Left Sidebar -->
                 <aside class="col-span-3 space-y-4">
                     <!-- Workflow Selector -->
                     <div class="bg-white p-3.5 rounded-md border border-slate-200 shadow-sm space-y-2">
                         <div class="flex items-center space-x-2">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Verification workflow</span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Verification Workflow</span>
                             <span class="bg-slate-100 text-slate-500 text-[9px] px-1.5 py-0.2 rounded border border-slate-200 font-semibold">LAB SETTING</span>
                         </div>
                         <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded">
-                            <button @click="workflowMode = 'fast'" :class="['py-1.5 rounded font-bold shadow-sm text-white', workflowMode === 'fast' ? 'bg-[#2B5270]' : 'bg-white text-slate-600 border border-slate-200']">Fast Count</button>
-                            <button @click="workflowMode = 'full'" :class="['py-1.5 rounded font-bold', workflowMode === 'full' ? 'bg-[#2B5270] text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200']">Full Scan</button>
+                            <button 
+                                @click="workflowMode = 'fast'"
+                                :class="['py-1.5 rounded font-bold transition', workflowMode === 'fast' ? 'bg-[#2B5270] text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200']">
+                                Fast Count
+                            </button>
+                            <button 
+                                @click="workflowMode = 'full'"
+                                :class="['py-1.5 rounded font-bold transition', workflowMode === 'full' ? 'bg-[#2B5270] text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200']">
+                                Full Scan
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Search Input -->
+                    <!-- Search -->
                     <div class="bg-white p-3.5 rounded-md border border-slate-200 shadow-sm space-y-1.5">
-                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Find Manifest</div>
-                        <div class="relative">
-                            <input type="text" v-model="searchQuery" placeholder="Scan or search manifest..."
-                                   class="w-full bg-slate-50/80 border border-slate-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 placeholder-slate-400" />
-                        </div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Find Manifest</label>
+                        <input 
+                            v-model="searchQuery" 
+                            type="text" 
+                            placeholder="Search by code or clinic..."
+                            class="w-full bg-slate-50/80 border border-slate-300 rounded px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
                     </div>
 
-                    <!-- Verify & Receive Counter Card -->
+                    <!-- Counter -->
                     <div class="bg-white p-3.5 rounded-md border border-slate-200 shadow-sm space-y-3">
-                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Verify & Receive</div>
-                        <div class="text-slate-600 font-medium text-[11px]">Total bottles counted by lab tech</div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Verify & Receive</label>
+                        <p class="text-slate-600 font-medium text-[11px]">Total bottles counted</p>
 
                         <div class="flex items-center space-x-2">
-                            <button @click="countedBottles = Math.max(0, countedBottles - 1)"
-                                    class="w-10 h-9 border border-slate-300 rounded flex items-center justify-center font-bold text-slate-600 hover:bg-slate-50 text-base">
+                            <button 
+                                @click="countedBottles = Math.max(0, countedBottles - 1)"
+                                class="w-10 h-9 border border-slate-300 rounded flex items-center justify-center font-bold text-slate-600 hover:bg-slate-50">
                                 −
                             </button>
                             <div class="flex-1 h-9 border border-slate-300 rounded flex items-center justify-center font-bold text-slate-800 text-base bg-white">
                                 {{ countedBottles }}
                             </div>
-                            <button @click="countedBottles++"
-                                    class="w-10 h-9 border border-slate-300 rounded flex items-center justify-center font-bold text-slate-600 hover:bg-slate-50 text-base">
+                            <button 
+                                @click="countedBottles++"
+                                class="w-10 h-9 border border-slate-300 rounded flex items-center justify-center font-bold text-slate-600 hover:bg-slate-50">
                                 +
                             </button>
                         </div>
 
-                        <div v-if="activeManifest" class="text-[11px] font-bold" :class="countedBottles === activeManifest.specimens.length ? 'text-emerald-700' : 'text-amber-700'">
-                            Matches {{ activeManifest.specimens.length }} expected — {{ countedBottles === activeManifest.specimens.length ? 'ready to close.' : 'mismatch detected.' }}
+                        <div v-if="activeManifest" 
+                            class="text-[11px] font-bold" 
+                            :class="countedBottles === activeManifest.specimens.length ? 'text-emerald-700' : 'text-amber-700'">
+                            {{ countedBottles === activeManifest.specimens.length ? '✓ Ready to close' : `⚠️ Mismatch: ${countedBottles} vs ${activeManifest.specimens.length}` }}
                         </div>
                     </div>
 
-                    <!-- Recent Manifests List -->
+                    <!-- Manifests List -->
                     <div class="bg-white p-3.5 rounded-md border border-slate-200 shadow-sm space-y-2.5">
-                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Recent Manifests</div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Recent Manifests</label>
 
                         <div v-if="isLoading" class="space-y-2">
-                            <div v-for="i in 3" :key="i" class="h-20 bg-slate-100 rounded animate-pulse"></div>
+                            <div v-for="i in 3" :key="i" class="h-16 bg-slate-100 rounded animate-pulse"></div>
                         </div>
 
-                        <div v-else-if="filteredManifests.length === 0" class="text-center text-slate-500 py-4 text-[11px]">
-                            <p>No manifests found</p>
+                        <div v-else-if="filteredManifests.length === 0" class="text-center text-slate-500 py-6 text-[11px]">
+                            <p>No manifests available</p>
                         </div>
 
-                        <div v-else class="space-y-2">
-                            <div v-for="m in filteredManifests" :key="m.id" @click="selectManifest(m.id)"
-                                 :class="['p-3 rounded border cursor-pointer transition', activeManifest?.id === m.id ? 'border-blue-400 bg-slate-50/80 shadow-sm' : 'border-slate-200 hover:bg-slate-50']">
-                                <div class="flex justify-between items-start">
+                        <div v-else class="space-y-2 max-h-96 overflow-y-auto">
+                            <button 
+                                v-for="m in filteredManifests" 
+                                :key="m.id"
+                                @click="selectManifest(m.id)"
+                                :class="['w-full text-left p-3 rounded border transition', activeManifest?.id === m.id ? 'border-blue-400 bg-blue-50 shadow-md' : 'border-slate-200 hover:bg-slate-50']">
+                                <div class="flex justify-between items-start mb-1">
                                     <span class="font-bold text-slate-900 text-xs">{{ m.code }}</span>
-                                    <span class="text-[11px] text-slate-500 font-medium">{{ getReceivedCount(m) }}/{{ m.specimens.length }} received</span>
+                                    <span class="text-[10px] text-slate-500">{{ getReceivedCount(m) }}/{{ m.specimens.length }}</span>
                                 </div>
-                                <div class="text-[11px] text-slate-500 mt-0.5">{{ m.originClinic }}</div>
-                                <div class="mt-2 flex justify-start">
-                                    <span :class="getBadgeStyles(m.status)" class="text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wide">
-                                        {{ formatStatusText(m.status) }}
-                                    </span>
-                                </div>
-                            </div>
+                                <div class="text-[11px] text-slate-500 mb-2">{{ m.originClinic }}</div>
+                                <span :class="getBadgeStyles(m.status)" class="text-[9px] px-2 py-0.5 rounded font-bold inline-block">
+                                    {{ formatStatusText(m.status) }}
+                                </span>
+                            </button>
                         </div>
-
-                        <button class="w-full text-center text-slate-600 hover:text-slate-900 text-[11px] font-bold pt-2 border-t border-slate-100 flex items-center justify-center space-x-1">
-                            <span>View all manifests</span>
-                            <span>›</span>
-                        </button>
                     </div>
                 </aside>
 
-                <!-- Right Detail Workspace Panel -->
-                <main class="col-span-9 space-y-4" v-if="activeManifest">
-                    <!-- Header Banner -->
+                <!-- Right Panel -->
+                <main v-if="activeManifest" class="col-span-9 space-y-4">
+                    <!-- Header -->
                     <div class="bg-white p-5 rounded-md border border-slate-200 shadow-sm flex justify-between items-start">
                         <div class="space-y-1">
                             <div class="flex items-center space-x-2">
-                                <h1 class="text-lg font-bold text-slate-900">Manifest {{ activeManifest.code }}</h1>
-                                <span class="bg-slate-100 text-slate-600 border border-slate-200 text-[10px] px-2 py-0.5 rounded font-bold uppercase">{{ workflowMode === 'fast' ? 'Fast Count' : 'Full Scan' }}</span>
+                                <h1 class="text-lg font-bold text-slate-900">{{ activeManifest.code }}</h1>
+                                <span class="bg-slate-100 text-slate-600 border border-slate-200 text-[10px] px-2 py-0.5 rounded font-bold">
+                                    {{ workflowMode === 'fast' ? 'FAST COUNT' : 'FULL SCAN' }}
+                                </span>
                             </div>
                             <p class="text-slate-500 text-xs">
-                                From <span class="font-semibold text-slate-700">{{ activeManifest.originClinic }}</span> — Sent {{ formatDate(activeManifest.sentAt) }} ·
-                                <span class="font-bold text-slate-800">{{ activeManifest.specimens.length }} specimens expected</span> · {{ currentUser }}
+                                <strong>From:</strong> {{ activeManifest.originClinic }} | 
+                                <strong>Sent:</strong> {{ formatDate(activeManifest.sentAt) }} | 
+                                <strong>Expected:</strong> {{ activeManifest.specimens.length }} specimens
                             </p>
                         </div>
-
-                        <div class="flex items-center space-x-2">
-                            <button @click="flagDiscrepancy" class="px-3 py-1.5 border border-red-300 text-red-600 hover:bg-red-50 rounded font-bold text-xs flex items-center space-x-1">
-                                <span>🚩</span>
-                                <span>Flag discrepancy</span>
-                            </button>
-                            <button @click="closeManifest"
-                                    :disabled="pendingCount > 0 || isProcessing"
-                                    :class="['px-4 py-1.5 rounded font-bold text-xs text-white shadow-sm transition', pendingCount === 0 && !isProcessing ? 'bg-[#2B5270] hover:bg-[#1C3644] cursor-pointer' : 'bg-slate-300 cursor-not-allowed']">
-                                {{ isProcessing ? 'Closing...' : 'Mark Received & Close' }}
-                            </button>
-                        </div>
+                        <button 
+                            @click="closeManifest"
+                            :disabled="pendingCount > 0 || isProcessing"
+                            :class="['px-4 py-2 rounded font-bold text-xs text-white transition', pendingCount === 0 && !isProcessing ? 'bg-[#2B5270] hover:bg-[#1C3644]' : 'bg-slate-300 cursor-not-allowed']">
+                            {{ isProcessing ? '⏳ Closing...' : 'Close Manifest' }}
+                        </button>
                     </div>
 
-                    <!-- Metric KPI Cards -->
+                    <!-- KPI Cards -->
                     <div class="grid grid-cols-4 gap-4">
                         <div class="bg-white p-4 rounded-md border border-slate-200 text-center shadow-sm">
-                            <div class="text-2xl font-black text-slate-800">{{ activeManifest.specimens.length }}</div>
-                            <div class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mt-1">EXPECTED</div>
+                            <div class="text-3xl font-black text-slate-800">{{ activeManifest.specimens.length }}</div>
+                            <div class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mt-2">Expected</div>
                         </div>
                         <div class="bg-white p-4 rounded-md border border-slate-200 text-center shadow-sm">
-                            <div class="text-2xl font-black text-emerald-600">{{ receivedCount }}</div>
-                            <div class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mt-1">RECEIVED</div>
+                            <div class="text-3xl font-black text-emerald-600">{{ receivedCount }}</div>
+                            <div class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mt-2">Received</div>
                         </div>
                         <div class="bg-white p-4 rounded-md border border-slate-200 text-center shadow-sm">
-                            <div class="text-2xl font-black text-amber-500">{{ pendingCount }}</div>
-                            <div class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mt-1">PENDING</div>
+                            <div class="text-3xl font-black text-amber-500">{{ pendingCount }}</div>
+                            <div class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mt-2">Pending</div>
                         </div>
                         <div class="bg-white p-4 rounded-md border border-slate-200 text-center shadow-sm">
-                            <div class="text-2xl font-black text-red-500">{{ flaggedCount }}</div>
-                            <div class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mt-1">FLAGGED</div>
+                            <div class="text-3xl font-black text-red-500">{{ flaggedCount }}</div>
+                            <div class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mt-2">Flagged</div>
                         </div>
                     </div>
 
-                    <!-- Table View -->
+                    <!-- Table -->
                     <div class="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
-                        <div class="px-5 py-3 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
-                            <h2 class="text-xs font-bold text-slate-700">Specimens on manifest</h2>
+                        <div class="px-5 py-3 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                            <h2 class="text-xs font-bold text-slate-700">{{ activeManifest.specimens.length }} Specimens</h2>
                             <span class="text-[11px] bg-emerald-100 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 rounded font-bold">
                                 {{ receivedCount }} received
                             </span>
                         </div>
 
                         <div v-if="activeManifest.specimens.length === 0" class="px-5 py-8 text-center text-slate-500">
-                            <p class="text-sm">No specimens found for this manifest</p>
+                            No specimens
                         </div>
 
-                        <table v-else class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="bg-slate-50 text-slate-500 uppercase tracking-wider font-bold border-b border-slate-200 text-[10px]">
-                                    <th class="px-5 py-2.5">STATUS</th>
-                                    <th class="px-5 py-2.5">SPECIMEN ID</th>
-                                    <th class="px-5 py-2.5">PATIENT</th>
-                                    <th class="px-5 py-2.5">SITE</th>
-                                    <th class="px-5 py-2.5">PROVIDER</th>
-                                    <th class="px-5 py-2.5">RECEIVED BY</th>
-                                    <th class="px-5 py-2.5">AT</th>
-                                    <th class="px-5 py-2.5 text-right">ACTIONS</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100">
-                                <tr v-for="s in activeManifest.specimens" :key="s.id" class="hover:bg-slate-50/80 transition">
-                                    <td class="px-5 py-2.5">
-                                        <span v-if="s.status === 1" class="bg-emerald-100 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded font-bold text-[10px] inline-flex items-center space-x-1">
-                                            <span>✓</span> <span>Received</span>
-                                        </span>
-                                        <span v-else-if="s.status === 2" class="bg-red-100 text-red-800 border border-red-200 px-2 py-0.5 rounded font-bold text-[10px] inline-flex items-center space-x-1">
-                                            <span>🚩</span> <span>Flagged</span>
-                                        </span>
-                                        <span v-else class="bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded font-bold text-[10px]">
-                                            Pending
-                                        </span>
-                                    </td>
-                                    <td class="px-5 py-2.5 font-bold text-slate-900">{{ s.code }}</td>
-                                    <td class="px-5 py-2.5 text-slate-700 font-medium">{{ s.patientName }}</td>
-                                    <td class="px-5 py-2.5 text-slate-600">{{ s.site }}</td>
-                                    <td class="px-5 py-2.5 text-slate-600">{{ s.provider }}</td>
-                                    <td class="px-5 py-2.5 text-slate-600">{{ s.receivedBy || '—' }}</td>
-                                    <td class="px-5 py-2.5 text-slate-600">{{ s.receivedAt ? formatTime(s.receivedAt) : '—' }}</td>
-                                    <td class="px-5 py-2.5 text-right space-x-1">
-                                        <button @click="markReceived(s.id)" :disabled="isProcessing || s.status === 1" class="px-2 py-1 border border-slate-200 rounded text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-bold disabled:opacity-50 disabled:cursor-not-allowed">✏️</button>
-                                        <button @click="flagMissing(s.id)" :disabled="isProcessing || s.status === 2" class="px-2 py-1 border border-slate-200 rounded text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-bold disabled:opacity-50 disabled:cursor-not-allowed">🚩</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div v-else class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                        <th class="px-4 py-2 font-bold text-slate-600">STATUS</th>
+                                        <th class="px-4 py-2 font-bold text-slate-600">ID</th>
+                                        <th class="px-4 py-2 font-bold text-slate-600">PATIENT</th>
+                                        <th class="px-4 py-2 font-bold text-slate-600">SITE</th>
+                                        <th class="px-4 py-2 font-bold text-slate-600">PROVIDER</th>
+                                        <th class="px-4 py-2 font-bold text-slate-600">RECEIVED BY</th>
+                                        <th class="px-4 py-2 font-bold text-slate-600">AT</th>
+                                        <th class="px-4 py-2 font-bold text-slate-600 text-right">ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr v-for="s in activeManifest.specimens" :key="s.id" class="hover:bg-slate-50">
+                                        <td class="px-4 py-2">
+                                            <span v-if="s.status === 1" class="bg-emerald-100 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[10px] font-bold inline-block">✓ Received</span>
+                                            <span v-else-if="s.status === 2" class="bg-red-100 text-red-800 border border-red-200 px-2 py-0.5 rounded text-[10px] font-bold inline-block">🚩 Flagged</span>
+                                            <span v-else class="bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded text-[10px] font-bold inline-block">Pending</span>
+                                        </td>
+                                        <td class="px-4 py-2 font-bold text-slate-900">{{ s.code }}</td>
+                                        <td class="px-4 py-2 text-slate-700">{{ s.patientName }}</td>
+                                        <td class="px-4 py-2 text-slate-600">{{ s.site }}</td>
+                                        <td class="px-4 py-2 text-slate-600">{{ s.provider }}</td>
+                                        <td class="px-4 py-2 text-slate-600">{{ s.receivedBy || '—' }}</td>
+                                        <td class="px-4 py-2 text-slate-600">{{ s.receivedAt ? formatTime(s.receivedAt) : '—' }}</td>
+                                        <td class="px-4 py-2 text-right space-x-1">
+                                            <button 
+                                                @click="markReceived(s.id)"
+                                                :disabled="isProcessing || s.status === 1"
+                                                class="px-2 py-1 border border-slate-200 rounded text-slate-600 hover:bg-slate-100 font-bold disabled:opacity-50">
+                                                ✏️
+                                            </button>
+                                            <button 
+                                                @click="flagMissing(s.id)"
+                                                :disabled="isProcessing || s.status === 2"
+                                                class="px-2 py-1 border border-slate-200 rounded text-slate-600 hover:bg-slate-100 font-bold disabled:opacity-50">
+                                                🚩
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </main>
 
                 <!-- Empty State -->
-                <main v-else class="col-span-9 flex items-center justify-center">
+                <main v-else class="col-span-9 flex items-center justify-center min-h-96">
                     <div class="text-center text-slate-500">
-                        <p class="text-lg font-semibold mb-2">No manifest selected</p>
-                        <p class="text-sm">Select a manifest from the list to get started</p>
+                        <p class="text-lg font-semibold mb-2">📦 No Manifest Selected</p>
+                        <p class="text-sm">Choose one from the list to begin</p>
                     </div>
                 </main>
             </div>
@@ -260,9 +276,12 @@
             <!-- SCAN HISTORY TAB -->
             <div v-else-if="activeTab === 'scan-history'" class="max-w-4xl mx-auto">
                 <div class="bg-white p-6 rounded-md border border-slate-200 shadow-sm">
-                    <h2 class="text-lg font-bold text-slate-900 mb-4">Scan History</h2>
-                    <div class="space-y-3">
-                        <div v-for="(scan, idx) in scanHistory" :key="idx" class="p-3 border border-slate-200 rounded flex justify-between">
+                    <h2 class="text-lg font-bold text-slate-900 mb-4">📋 Scan History</h2>
+                    <div v-if="scanHistory.length === 0" class="text-center text-slate-500 py-8">
+                        No scans recorded yet
+                    </div>
+                    <div v-else class="space-y-3">
+                        <div v-for="(scan, idx) in scanHistory" :key="idx" class="p-3 border border-slate-200 rounded flex justify-between items-start">
                             <div>
                                 <p class="font-semibold text-slate-900">{{ scan.action }}</p>
                                 <p class="text-[11px] text-slate-500">{{ scan.specimen }} · {{ scan.manifest }}</p>
@@ -274,10 +293,13 @@
             </div>
 
             <!-- MANIFESTS TAB -->
-            <div v-else-if="activeTab === 'manifests'" class="max-w-4xl mx-auto">
+            <div v-else-if="activeTab === 'manifests'" class="max-w-5xl mx-auto">
                 <div class="bg-white p-6 rounded-md border border-slate-200 shadow-sm">
-                    <h2 class="text-lg font-bold text-slate-900 mb-4">All Manifests</h2>
-                    <div class="overflow-x-auto">
+                    <h2 class="text-lg font-bold text-slate-900 mb-4">📦 All Manifests</h2>
+                    <div v-if="manifests.length === 0" class="text-center text-slate-500 py-8">
+                        No manifests available
+                    </div>
+                    <div v-else class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-50 border-b border-slate-200">
                                 <tr>
@@ -285,6 +307,7 @@
                                     <th class="px-4 py-3 font-bold text-slate-600">CLINIC</th>
                                     <th class="px-4 py-3 font-bold text-slate-600">SENT</th>
                                     <th class="px-4 py-3 font-bold text-slate-600">SPECIMENS</th>
+                                    <th class="px-4 py-3 font-bold text-slate-600">RECEIVED</th>
                                     <th class="px-4 py-3 font-bold text-slate-600">STATUS</th>
                                 </tr>
                             </thead>
@@ -294,8 +317,9 @@
                                     <td class="px-4 py-3 text-slate-700">{{ m.originClinic }}</td>
                                     <td class="px-4 py-3 text-slate-600">{{ formatDate(m.sentAt) }}</td>
                                     <td class="px-4 py-3 text-slate-600">{{ m.specimens.length }}</td>
+                                    <td class="px-4 py-3 text-slate-600">{{ getReceivedCount(m) }}</td>
                                     <td class="px-4 py-3">
-                                        <span :class="getBadgeStyles(m.status)" class="text-[10px] px-2 py-0.5 rounded font-bold uppercase">
+                                        <span :class="getBadgeStyles(m.status)" class="text-[10px] px-2 py-0.5 rounded font-bold inline-block">
                                             {{ formatStatusText(m.status) }}
                                         </span>
                                     </td>
@@ -309,16 +333,19 @@
             <!-- DISCREPANCIES TAB -->
             <div v-else-if="activeTab === 'discrepancies'" class="max-w-4xl mx-auto">
                 <div class="bg-white p-6 rounded-md border border-slate-200 shadow-sm">
-                    <h2 class="text-lg font-bold text-slate-900 mb-4">Discrepancies</h2>
+                    <h2 class="text-lg font-bold text-slate-900 mb-4">⚠️ Discrepancies</h2>
                     <div v-if="discrepancies.length === 0" class="text-center text-slate-500 py-8">
-                        <p>No discrepancies recorded</p>
+                        No discrepancies recorded
                     </div>
                     <div v-else class="space-y-3">
-                        <div v-for="d in discrepancies" :key="d.id" class="p-3 border border-red-200 bg-red-50 rounded">
+                        <div v-for="d in discrepancies" :key="d.id" class="p-4 border border-red-200 bg-red-50 rounded">
                             <div class="flex justify-between items-start">
                                 <div>
-                                    <p class="font-semibold text-red-900">Missing Specimen</p>
-                                    <p class="text-[11px] text-red-700">Manifest: {{ d.manifestCode }} · Specimen: {{ d.specimenCode }}</p>
+                                    <p class="font-semibold text-red-900">🚩 Missing Specimen</p>
+                                    <p class="text-[11px] text-red-700 mt-1">
+                                        <strong>Manifest:</strong> {{ d.manifestCode }} | 
+                                        <strong>Specimen:</strong> {{ d.specimenCode }}
+                                    </p>
                                 </div>
                                 <span class="text-[10px] bg-red-100 text-red-800 px-2 py-1 rounded font-bold">{{ d.status }}</span>
                             </div>
@@ -329,6 +356,15 @@
         </div>
     </div>
 </template>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active {
+    transition: opacity 0.3s;
+}
+.fade-enter-from, .fade-leave-to {
+    opacity: 0;
+}
+</style>
 
 <script setup>
     import { ref, computed, onMounted } from 'vue';
@@ -355,10 +391,10 @@
     // History & Discrepancies
     const scanHistory = ref([]);
     const discrepancies = ref([]);
-    const scanHistoryCount = computed(() => scanHistory.value.length);
-    const discrepancyCount = computed(() => discrepancies.value.length);
 
     // Computed
+    const scanHistoryCount = computed(() => scanHistory.value.length);
+    const discrepancyCount = computed(() => discrepancies.value.length);
     const receivedCount = computed(() => activeManifest.value?.specimens.filter(s => s.status === 1).length || 0);
     const flaggedCount = computed(() => activeManifest.value?.specimens.filter(s => s.status === 2).length || 0);
     const pendingCount = computed(() => activeManifest.value?.specimens.filter(s => s.status === 0).length || 0);
@@ -378,12 +414,13 @@
         try {
             const res = await api.get('/manifests');
             manifests.value = res.data;
+            console.log('✅ Manifests loaded:', manifests.value.length);
             if (manifests.value.length > 0) {
                 await selectManifest(manifests.value[0].id);
             }
         } catch (err) {
-            errorMessage.value = "Failed to load manifests. Ensure backend is running on localhost:5052.";
-            console.error("API Error:", err);
+            errorMessage.value = "❌ Cannot connect to backend. Ensure it's running on localhost:5052.";
+            console.error("Error:", err.message);
         } finally {
             isLoading.value = false;
         }
@@ -394,9 +431,10 @@
             const res = await api.get(`/manifests/${id}`);
             activeManifest.value = res.data;
             countedBottles.value = activeManifest.value.specimens.filter(s => s.status === 1).length;
+            console.log('✅ Manifest selected:', activeManifest.value.code);
         } catch (err) {
             errorMessage.value = "Failed to load manifest details.";
-            console.error("Error fetching manifest detail:", err);
+            console.error("Error:", err);
         }
     };
 
@@ -404,18 +442,21 @@
         isProcessing.value = true;
         try {
             await api.post(`/manifests/${activeManifest.value.id}/specimens/${specimenId}/receive`);
+            const specimen = activeManifest.value.specimens.find(s => s.id === specimenId);
+            
             scanHistory.value.unshift({
-                action: 'Marked Received',
-                specimen: `SP-${specimenId.slice(0, 8)}`,
+                action: '✓ Marked Received',
+                specimen: specimen?.code || 'Unknown',
                 manifest: activeManifest.value.code,
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
             });
+            
             await selectManifest(activeManifest.value.id);
-            successMessage.value = "✓ Specimen marked as received.";
+            successMessage.value = `✓ ${specimen?.code} marked as received`;
             setTimeout(() => successMessage.value = '', 3000);
         } catch (err) {
             errorMessage.value = err.response?.data?.error || "Failed to mark specimen received.";
-            console.error("Error marking specimen received:", err);
+            console.error("Error:", err);
         } finally {
             isProcessing.value = false;
         }
@@ -426,24 +467,27 @@
         try {
             await api.post(`/manifests/${activeManifest.value.id}/specimens/${specimenId}/flag`);
             const specimen = activeManifest.value.specimens.find(s => s.id === specimenId);
+            
             discrepancies.value.unshift({
                 id: `disc-${Date.now()}`,
                 manifestCode: activeManifest.value.code,
                 specimenCode: specimen?.code || 'Unknown',
                 status: 'Open'
             });
+            
             scanHistory.value.unshift({
-                action: 'Flagged Missing',
-                specimen: specimen?.code || `SP-${specimenId.slice(0, 8)}`,
+                action: '🚩 Flagged Missing',
+                specimen: specimen?.code || 'Unknown',
                 manifest: activeManifest.value.code,
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
             });
+            
             await selectManifest(activeManifest.value.id);
-            successMessage.value = "⚠️ Specimen flagged as missing.";
+            successMessage.value = `🚩 ${specimen?.code} flagged as missing`;
             setTimeout(() => successMessage.value = '', 3000);
         } catch (err) {
             errorMessage.value = err.response?.data?.error || "Failed to flag specimen.";
-            console.error("Error flagging specimen:", err);
+            console.error("Error:", err);
         } finally {
             isProcessing.value = false;
         }
@@ -451,55 +495,51 @@
 
     const closeManifest = async () => {
         if (pendingCount.value > 0) {
-            errorMessage.value = `Cannot close manifest with ${pendingCount.value} pending specimens.`;
+            errorMessage.value = `Cannot close: ${pendingCount.value} specimen(s) still pending`;
             return;
         }
 
         isProcessing.value = true;
         try {
             await api.post(`/manifests/${activeManifest.value.id}/close`);
+            
             scanHistory.value.unshift({
-                action: 'Closed Manifest',
+                action: '✓ Closed Manifest',
                 specimen: '—',
                 manifest: activeManifest.value.code,
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
             });
-            successMessage.value = "✓ Manifest closed successfully.";
+            
+            successMessage.value = `✓ Manifest closed successfully`;
             await fetchManifests();
             setTimeout(() => successMessage.value = '', 3000);
         } catch (err) {
             errorMessage.value = err.response?.data?.error || "Failed to close manifest.";
-            console.error("Error closing manifest:", err);
+            console.error("Error:", err);
         } finally {
             isProcessing.value = false;
         }
     };
 
-    const flagDiscrepancy = () => {
-        errorMessage.value = "Use the 🚩 button in the table to flag individual specimens.";
-        setTimeout(() => errorMessage.value = '', 4000);
-    };
-
-    // Helper Methods
+    // Helpers
     const getReceivedCount = (manifest) => manifest.specimens.filter(s => s.status === 1).length;
 
     const formatTime = (dt) => {
         if (!dt) return '—';
-        const date = new Date(dt);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+        return new Date(dt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
     };
 
     const formatDate = (dt) => {
         if (!dt) return '—';
         const date = new Date(dt);
-        return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) + ', ' +
-            date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+        return date.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' +
+               date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
     };
 
     const formatStatusText = (status) => {
-        if (status === 0) return 'In transit';
+        if (status === 0) return 'In Transit';
         if (status === 1) return 'Received';
-        if (status === 2) return 'Closed — 1 discrepancy';
+        if (status === 2) return 'With Discrepancy';
         return 'Closed';
     };
 
@@ -510,5 +550,8 @@
     };
 
     // Lifecycle
-    onMounted(fetchManifests);
+    onMounted(() => {
+        console.log('🚀 Frontend initialized');
+        fetchManifests();
+    });
 </script>
