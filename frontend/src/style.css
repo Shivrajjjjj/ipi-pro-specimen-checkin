@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+    --color-ipiNavy: #1E293B;
+    --color-ipiHeader: #0F172A;
+    --color-ipiBg: #F8FAFC;
+    --color-ipiAccent: #1E56A0;
+    --color-ipiGreen: #D1FAE5;
+    --color-ipiGreenText: #065F46;
+    --color-ipiRed: #FEE2E2;
+    --color-ipiRedText: #991B1B;
+}
+
+body {
+    margin: 0;
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    background-color: #F4F6F8;
+    color: #1F2937;
+}
