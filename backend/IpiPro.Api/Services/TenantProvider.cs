@@ -1,3 +1,6 @@
+using System;
+using Microsoft.AspNetCore.Http;
+
 namespace IpiPro.Api.Services;
 
 public interface ITenantProvider

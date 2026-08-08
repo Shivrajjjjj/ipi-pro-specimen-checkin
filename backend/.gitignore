@@ -1,0 +1,26 @@
+# Build results
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# User-specific files
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.sln.docstates
+
+# Environment
+appsettings.Local.json
+.env
+.env.local
+
+# Dependencies
+packages/

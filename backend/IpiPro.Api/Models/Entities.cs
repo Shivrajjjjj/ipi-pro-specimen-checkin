@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace IpiPro.Api.Models;
 
 public class Lab
