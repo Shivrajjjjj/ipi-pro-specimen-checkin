@@ -55,7 +55,3 @@
 - [x] postcss.config.js
 
 ---
-
-## 📋 Pre-Submission Verification
-
-### 1. Backend Build & Test
