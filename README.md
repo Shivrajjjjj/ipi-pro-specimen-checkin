@@ -288,3 +288,11 @@ return base.SaveChangesAsync(cancellationToken);
 ✅ GitHub Link — Full source with git history
 ✅ "With More Time" Section — 10 improvements listed
 ✅ Professional Format — Badges, tables, code blocks
+
+<img width="1912" height="875" alt="image" src="https://github.com/user-attachments/assets/5807663c-f359-4b31-ab6b-a236b030a824" />
+<img width="1918" height="642" alt="image" src="https://github.com/user-attachments/assets/7955a3ad-7821-4114-99e7-f04d4812db5e" />
+<img width="1905" height="553" alt="image" src="https://github.com/user-attachments/assets/09c76007-ac39-46f4-99c8-14e7cae87899" />
+<img width="1908" height="536" alt="image" src="https://github.com/user-attachments/assets/a843c009-b29c-4033-a596-8ba055bc4181" />
+
+
+
