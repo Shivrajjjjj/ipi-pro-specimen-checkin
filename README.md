@@ -1,5 +1,7 @@
 # 🧬 IPI Pro — Specimen Check-In
 
+https://drive.google.com/file/d/1J0spEEcvZUm9tJxYV7pu51Tfy2vPX_5J/view?usp=drive_web
+
 > A production-ready healthcare SaaS feature for specimen tracking and manifest reconciliation. Lab technicians receive specimen shipments, verify bottles, and flag discrepancies with **server-enforced multi-tenant isolation**.
 
 ![License](https://img.shields.io/badge/license-MIT-blue)
