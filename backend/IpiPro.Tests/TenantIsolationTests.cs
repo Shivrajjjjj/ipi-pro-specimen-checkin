@@ -2,15 +2,8 @@ using Xunit;
 using Microsoft.EntityFrameworkCore;
 using IpiPro.Api.Context;
 using IpiPro.Api.Models;
-using IpiPro.Api.Services;
 
 namespace IpiPro.Tests;
-
-public class MockTenantProvider : ITenantProvider
-{
-    public Guid ActiveLabId { get; set; }
-    public Guid GetCurrentLabId() => ActiveLabId;
-}
 
 public class TenantIsolationTests
 {

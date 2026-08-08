@@ -9,11 +9,7 @@ using IpiPro.Api.Models;
 
 namespace IpiPro.Tests;
 
-public class MockTenantProvider : IpiPro.Api.Services.ITenantProvider
-{
-    public Guid ActiveLabId { get; set; }
-    public Guid GetCurrentLabId() => ActiveLabId;
-}
+
 
 public class ReconciliationTests
 {
@@ -278,7 +274,7 @@ public class ReconciliationTests
         using (var context = new AppDbContext(options, tenantProvider))
         {
             var specimen = await context.Specimens.FindAsync(specimenId);
-            specimen.Status = SpecimenStatus.Received;
+            specimen!.Status = SpecimenStatus.Received;
             specimen.ReceivedBy = "Lab Tech 1";
             specimen.ReceivedAt = DateTime.UtcNow;
             await context.SaveChangesAsync();
@@ -288,8 +284,8 @@ public class ReconciliationTests
         using (var context = new AppDbContext(options, tenantProvider))
         {
             var specimen = await context.Specimens.FindAsync(specimenId);
-            Assert.Equal(SpecimenStatus.Received, specimen.Status);
-            firstReceivedAt = specimen.ReceivedAt.Value;
+            Assert.Equal(SpecimenStatus.Received, specimen!.Status);
+            firstReceivedAt = specimen.ReceivedAt!.Value;
         }
 
         // Mark received second time (idempotent)
@@ -297,7 +293,7 @@ public class ReconciliationTests
         using (var context = new AppDbContext(options, tenantProvider))
         {
             var specimen = await context.Specimens.FindAsync(specimenId);
-            if (specimen.Status != SpecimenStatus.Received)
+            if (specimen!.Status != SpecimenStatus.Received)
             {
                 specimen.Status = SpecimenStatus.Received;
                 specimen.ReceivedBy = "Lab Tech 1";
@@ -310,8 +306,8 @@ public class ReconciliationTests
         using (var context = new AppDbContext(options, tenantProvider))
         {
             var specimen = await context.Specimens.FindAsync(specimenId);
-            Assert.Equal(SpecimenStatus.Received, specimen.Status);
-            Assert.Equal(firstReceivedAt, specimen.ReceivedAt.Value);
+            Assert.Equal(SpecimenStatus.Received, specimen!.Status);
+            Assert.Equal(firstReceivedAt, specimen.ReceivedAt!.Value);
         }
     }
 }

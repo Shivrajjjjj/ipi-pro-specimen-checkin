@@ -35,54 +35,39 @@ public class AppDbContext : DbContext
             .HasForeignKey(s => s.ManifestId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Query filters for tenant isolation (soft enforcement)
-        try
-        {
-            var currentLabId = _tenantProvider.GetCurrentLabId();
-            if (currentLabId != Guid.Empty)
-            {
-                modelBuilder.Entity<Manifest>()
-                    .HasQueryFilter(m => m.LabId == currentLabId);
-                modelBuilder.Entity<Specimen>()
-                    .HasQueryFilter(s => s.LabId == currentLabId);
-                modelBuilder.Entity<Discrepancy>()
-                    .HasQueryFilter(d => d.LabId == currentLabId);
-            }
-        }
-        catch
-        {
-            // No tenant context during migrations or model creation
-        }
+        // Query filters for tenant isolation
+        // Use a lambda that captures _tenantProvider (not the value at config time)
+        modelBuilder.Entity<Manifest>()
+            .HasQueryFilter(m => m.LabId == _tenantProvider.GetCurrentLabId());
+
+        modelBuilder.Entity<Specimen>()
+            .HasQueryFilter(s => s.LabId == _tenantProvider.GetCurrentLabId());
+
+        modelBuilder.Entity<Discrepancy>()
+            .HasQueryFilter(d => d.LabId == _tenantProvider.GetCurrentLabId());
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         // Auto-inject LabId for new entities
-        try
+        var currentLabId = _tenantProvider.GetCurrentLabId();
+        if (currentLabId != Guid.Empty)
         {
-            var currentLabId = _tenantProvider.GetCurrentLabId();
-            if (currentLabId != Guid.Empty)
+            foreach (var entry in ChangeTracker.Entries())
             {
-                foreach (var entry in ChangeTracker.Entries())
+                if (entry.State == EntityState.Added)
                 {
-                    if (entry.State == EntityState.Added)
+                    var labIdProp = entry.Entity.GetType().GetProperty("LabId");
+                    if (labIdProp != null)
                     {
-                        var labIdProp = entry.Entity.GetType().GetProperty("LabId");
-                        if (labIdProp != null)
+                        var currentValue = (Guid)labIdProp.GetValue(entry.Entity)!;
+                        if (currentValue == Guid.Empty)
                         {
-                            var currentValue = (Guid)labIdProp.GetValue(entry.Entity)!;
-                            if (currentValue == Guid.Empty)
-                            {
-                                labIdProp.SetValue(entry.Entity, currentLabId);
-                            }
+                            labIdProp.SetValue(entry.Entity, currentLabId);
                         }
                     }
                 }
             }
-        }
-        catch
-        {
-            // If we can't get tenant context, skip injection
         }
 
         return base.SaveChangesAsync(cancellationToken);
